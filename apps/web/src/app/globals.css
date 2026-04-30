@@ -2,26 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #faf8f5;
+    --foreground: #000000;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bajes-bg text-bajes-black font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Prevent overscroll bounce on iOS */
+  body {
+    overscroll-behavior: none;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-bajes-black/20 rounded-full;
+  }
+
+  /* Number input - hide spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Neo-Brutalism card base */
+  .card-brutal {
+    @apply bg-white border-3 border-bajes-black rounded-2xl shadow-brutal;
+  }
+
+  /* Neo-Brutalism button base */
+  .btn-brutal {
+    @apply border-3 border-bajes-black rounded-xl font-display font-bold uppercase tracking-wide
+           shadow-brutal transition-all duration-150
+           hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-brutal-hover
+           active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
+  }
+
+  /* Neo-Brutalism input base */
+  .input-brutal {
+    @apply w-full border-3 border-bajes-black rounded-xl px-4 py-3 font-sans text-base
+           bg-white placeholder:text-gray-400
+           focus:outline-none focus:ring-2 focus:ring-bajes-yellow focus:shadow-brutal-sm
+           transition-all duration-150;
+  }
+
+  /* Badge base */
+  .badge-brutal {
+    @apply inline-flex items-center border-2 border-bajes-black rounded-full px-3 py-1
+           text-xs font-bold uppercase tracking-wider shadow-brutal-sm;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Custom border width for neo-brutalism */
+  .border-3 {
+    border-width: 3px;
+  }
+
+  /* Safe area padding for PWA */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
   }
 }
