@@ -1,0 +1,35 @@
+{
+  "name": "@bajes/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rimraf .next"
+  },
+  "dependencies": {
+    "@bajes/schemas": "workspace:*",
+    "@bajes/types": "workspace:*",
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "14.2.35"
+  },
+  "devDependencies": {
+    "@bajes/config": "workspace:*",
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "rimraf": "^6.0.0",
+    "vitest": "^3.2.0"
+  }
+}

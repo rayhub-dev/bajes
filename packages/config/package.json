@@ -1,0 +1,16 @@
+{
+  "name": "@bajes/config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared ESLint, Prettier, and TypeScript configurations",
+  "files": [
+    "*.js",
+    "*.json",
+    "*.mjs"
+  ],
+  "dependencies": {
+    "@eslint/js": "^9.28.0",
+    "typescript-eslint": "^8.33.1"
+  },
+  "devDependencies": {}
+}
