@@ -67,6 +67,11 @@ jobs:
                 }
               }
             }
+            // Move prisma from devDependencies to dependencies (needed for generate + migrate on VPS)
+            if (pkg.devDependencies && pkg.devDependencies.prisma) {
+              pkg.dependencies = pkg.dependencies || {};
+              pkg.dependencies.prisma = pkg.devDependencies.prisma;
+            }
             delete pkg.devDependencies;
             fs.writeFileSync('./deploy-package/package.json', JSON.stringify(pkg, null, 2));
 
@@ -101,6 +106,9 @@ jobs:
               console.log('   @bajes/' + pkgName + ' deps:', Object.keys(wsPkg.dependencies || {}).join(', ') || '(none)');
             }
           "
+
+          # Copy generated Prisma client (so VPS uses matching version)
+          cp -r apps/api/node_modules/.prisma deploy-package/.prisma-generated 2>/dev/null || true
 
           # Generate package-lock.json for deterministic installs on VPS
           cd deploy-package
@@ -183,11 +191,19 @@ jobs:
             fi
             echo "Critical packages verified"
 
+            # Use LOCAL prisma CLI (not npx which may resolve to global Prisma 7)
+            PRISMA="./node_modules/.bin/prisma"
+            if [ ! -f "$PRISMA" ]; then
+              echo "FATAL: Local prisma CLI not found at $PRISMA"
+              exit 1
+            fi
+            echo "Using local Prisma: $($PRISMA --version)"
+
             # Generate Prisma client on server
-            npx prisma generate --schema=prisma/schema.prisma
+            $PRISMA generate --schema=prisma/schema.prisma
 
             # Run database migrations
-            npx prisma migrate deploy --schema=prisma/schema.prisma
+            $PRISMA migrate deploy --schema=prisma/schema.prisma
 
             # Restart PM2 process (PM2_APP_NAME ensures unique name per environment)
             PM2_APP_NAME=${{ env.PM2_APP_NAME }} pm2 startOrRestart ecosystem.config.cjs --env production --update-env
