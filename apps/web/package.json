@@ -16,7 +16,7 @@
     "@bajes/schemas": "workspace:*",
     "@bajes/types": "workspace:*",
     "@supabase/supabase-js": "^2.49.8",
-    "@tanstack/react-query": "^5.100.6",
+    "@tanstack/react-query": "^5.100.7",
     "axios": "^1.15.2",
     "clsx": "^2.1.1",
     "dexie": "^4.4.2",
