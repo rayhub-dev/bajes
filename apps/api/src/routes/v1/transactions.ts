@@ -19,7 +19,7 @@ const idParamsSchema = z.object({
 
 const batchCreateSchema = z.array(createTransactionSchema).max(50);
 
-export async function transactionsV1Routes(server: FastifyInstance): Promise<void> {
+export function transactionsV1Routes(server: FastifyInstance): void {
   // ── GET /v1/transactions ─────────────────────────────────────────────────
   server.get("/v1/transactions", { preHandler: requireAuth }, async (request) => {
     const filters = server.validate.query(transactionFiltersSchema, request.query);
@@ -27,7 +27,7 @@ export async function transactionsV1Routes(server: FastifyInstance): Promise<voi
 
     const result = await transactionService.list(user.id, filters);
 
-    return paginated(result.data, result.pagination, String(request.id));
+    return paginated(result.data, result.pagination, request.id);
   });
 
   // ── POST /v1/transactions ────────────────────────────────────────────────
@@ -37,7 +37,7 @@ export async function transactionsV1Routes(server: FastifyInstance): Promise<voi
 
     const transaction = await transactionService.create(user.id, body);
 
-    return reply.status(201).send(ok(transaction, String(request.id)));
+    return reply.status(201).send(ok(transaction, request.id));
   });
 
   // ── PUT /v1/transactions/:id ─────────────────────────────────────────────
@@ -48,7 +48,7 @@ export async function transactionsV1Routes(server: FastifyInstance): Promise<voi
 
     const transaction = await transactionService.update(id, user.id, body);
 
-    return ok(transaction, String(request.id));
+    return ok(transaction, request.id);
   });
 
   // ── DELETE /v1/transactions/:id ──────────────────────────────────────────
@@ -58,7 +58,7 @@ export async function transactionsV1Routes(server: FastifyInstance): Promise<voi
 
     await transactionService.delete(id, user.id);
 
-    return ok({ deleted: true }, String(request.id));
+    return ok({ deleted: true }, request.id);
   });
 
   // ── POST /v1/transactions/batch ──────────────────────────────────────────
@@ -68,6 +68,6 @@ export async function transactionsV1Routes(server: FastifyInstance): Promise<voi
 
     const transactions = await transactionService.batchSync(user.id, body);
 
-    return ok(transactions, String(request.id));
+    return ok(transactions, request.id);
   });
 }

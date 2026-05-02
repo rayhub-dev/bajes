@@ -15,7 +15,7 @@ const listCategoriesQuerySchema = z.object({
     .transform((val) => val === "true"),
 });
 
-export async function categoriesV1Routes(server: FastifyInstance): Promise<void> {
+export function categoriesV1Routes(server: FastifyInstance): void {
   server.get("/v1/categories", { preHandler: requireAuth }, async (request) => {
     const query = server.validate.query(listCategoriesQuerySchema, request.query);
     const user = await authService.getOrCreateUser(request.user.supabaseUid, request.user.email);
@@ -23,6 +23,6 @@ export async function categoriesV1Routes(server: FastifyInstance): Promise<void>
       userId: user.id,
       includeDefaults: query.includeDefaults,
     });
-    return ok(categories, String(request.id));
+    return ok(categories, request.id);
   });
 }
