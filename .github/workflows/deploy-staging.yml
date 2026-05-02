@@ -119,7 +119,7 @@ jobs:
           script: mkdir -p ${{ env.DEPLOY_PATH }}
 
       - name: Rsync files to VPS
-        uses: burnett01/rsync-deployments@7.0.1
+        uses: burnett01/rsync-deployments@8.0.5
         with:
           switches: -avzr --delete --exclude='node_modules' --exclude='.env'
           path: deploy-package/
