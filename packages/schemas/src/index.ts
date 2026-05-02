@@ -1,3 +1,3 @@
-export * from "./transaction";
-export * from "./budget";
-export * from "./auth";
+export * from "./transaction.js";
+export * from "./budget.js";
+export * from "./auth.js";

@@ -16,7 +16,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   blue: "bg-bajes-blue text-white",
   green: "bg-bajes-green text-bajes-black",
   red: "bg-bajes-red text-white",
-  neutral: "bg-gray-100 text-gray-700",
+  neutral: "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-300",
 };
 
 function Badge({ children, variant = "neutral", className }: BadgeProps): React.ReactElement {

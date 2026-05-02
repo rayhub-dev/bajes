@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum PeriodType {
+  MONTHLY
+  WEEKLY
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  supabaseUid  String    @unique @map("supabase_uid")
+  email        String    @unique
+  displayName  String?   @map("display_name")
+  photoUrl     String?   @map("photo_url")
+  authProvider String    @default("email") @map("auth_provider")
+  currencyCode String    @default("IDR") @map("currency_code")
+  isGuest      Boolean   @default(false) @map("is_guest")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  transactions Transaction[]
+  budgets      Budget[]
+  categories   Category[]
+  sessions     Session[]
+  pushSubs     PushSubscription[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  refreshToken String    @unique @map("refresh_token")
+  userAgent    String?   @map("user_agent")
+  ipAddress    String?   @map("ip_address")
+  expiresAt    DateTime  @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+  @@map("sessions")
+}
+
+model Category {
+  id        String       @id @default(cuid())
+  userId    String?      @map("user_id")
+  name      String
+  icon      String
+  color     String
+  type      CategoryType
+  isDefault Boolean      @default(false) @map("is_default")
+  sortOrder Int          @default(0) @map("sort_order")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@index([userId])
+  @@map("categories")
+}
+
+model Transaction {
+  id              String          @id @default(cuid())
+  userId          String          @map("user_id")
+  categoryId      String          @map("category_id")
+  amountEncrypted String          @map("amount_encrypted")
+  amountCents     Int             @map("amount_cents")
+  type            TransactionType
+  note            String?
+  transactionDate DateTime        @map("transaction_date")
+  clientId        String?         @unique @map("client_id")
+  syncedAt        DateTime?       @map("synced_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  deletedAt       DateTime?       @map("deleted_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([userId, transactionDate(sort: Desc)])
+  @@index([userId, deletedAt])
+  @@index([clientId])
+  @@map("transactions")
+}
+
+model Budget {
+  id          String     @id @default(cuid())
+  userId      String     @map("user_id")
+  categoryId  String     @map("category_id")
+  amountCents Int        @map("amount_cents")
+  periodType  PeriodType @map("period_type")
+  periodYear  Int        @map("period_year")
+  periodMonth Int?       @map("period_month")
+  periodWeek  Int?       @map("period_week")
+  notifyAt    Int        @default(80) @map("notify_at")
+  notifiedAt  DateTime?  @map("notified_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId, periodType, periodYear, periodMonth, periodWeek])
+  @@index([userId, periodYear, periodMonth])
+  @@map("budgets")
+}
+
+model PushSubscription {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  endpoint   String    @unique
+  p256dh     String    @map("p256dh")
+  auth       String
+  userAgent  String?   @map("user_agent")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  action     String
+  resourceId String?  @map("resource_id")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("audit_logs")
+}

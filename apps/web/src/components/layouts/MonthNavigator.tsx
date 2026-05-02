@@ -54,7 +54,7 @@ function MonthNavigator({
   };
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <button
         onClick={handlePrev}
         className="rounded-lg border-2 border-bajes-black bg-white p-2 shadow-brutal-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:bg-gray-50"

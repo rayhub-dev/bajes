@@ -33,9 +33,9 @@ function ConnectionStatus(): React.ReactElement | null {
   if (isOnline && !showReconnected) return null;
 
   return (
-    <div className="fixed left-0 right-0 top-0 z-50 animate-slide-up">
+    <div className="fixed left-0 right-0 top-0 z-50 animate-slide-up lg:left-64">
       {!isOnline && (
-        <div className="border-b-3 flex items-center justify-center gap-2 border-bajes-black bg-bajes-yellow px-4 py-2">
+        <div className="border-b-3 flex items-center justify-center gap-2 border-bajes-black bg-bajes-yellow px-4 py-2 dark:border-white/20">
           <WifiOff size={16} strokeWidth={3} />
           <span className="text-xs font-bold uppercase tracking-wider">
             Mode offline — data akan disinkronkan
@@ -43,7 +43,7 @@ function ConnectionStatus(): React.ReactElement | null {
         </div>
       )}
       {showReconnected && (
-        <div className="border-b-3 flex items-center justify-center gap-2 border-bajes-black bg-bajes-green px-4 py-2">
+        <div className="border-b-3 flex items-center justify-center gap-2 border-bajes-black bg-bajes-green px-4 py-2 dark:border-white/20">
           <Wifi size={16} strokeWidth={3} />
           <span className="text-xs font-bold uppercase tracking-wider">
             Kembali online — menyinkronkan data...

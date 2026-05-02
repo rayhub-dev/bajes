@@ -23,7 +23,9 @@ function EmptyState({
     >
       <span className="mb-4 text-5xl">{icon}</span>
       <h3 className="mb-2 font-display text-lg font-bold uppercase">{title}</h3>
-      <p className="mb-6 max-w-xs font-sans text-sm text-gray-500">{description}</p>
+      <p className="mb-6 max-w-xs font-sans text-sm text-gray-500 dark:text-gray-400">
+        {description}
+      </p>
       {action}
     </div>
   );

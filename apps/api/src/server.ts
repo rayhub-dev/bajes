@@ -2,6 +2,12 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
+import { errorHandlerPlugin } from "./plugins/errorHandler.js";
+import { validatePlugin } from "./plugins/validate.js";
+import { categoriesV1Routes } from "./routes/v1/categories.js";
+import { transactionsV1Routes } from "./routes/v1/transactions.js";
+import { budgetsV1Routes } from "./routes/v1/budgets.js";
+import { authV1Routes } from "./routes/v1/auth.js";
 
 const envToLogger: Record<string, object | boolean> = {
   development: {
@@ -27,11 +33,29 @@ const server = Fastify({
 async function start(): Promise<void> {
   // ── Plugins ──────────────────────────────────────────────────────────────
 
+  const configuredOrigins = (process.env["CORS_ORIGINS"] ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+
+  const allowedOrigins = new Set([
+    ...configuredOrigins,
+    "http://localhost:3000",
+    "http://localhost:3001",
+  ]);
+
   await server.register(cors, {
-    origin: (process.env["CORS_ORIGINS"] ?? "http://localhost:3000").split(","),
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("CORS origin not allowed"), false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "X-CSRF-Token"],
+    allowedHeaders: ["Content-Type", "X-CSRF-Token", "Authorization"],
   });
 
   await server.register(cookie);
@@ -43,6 +67,13 @@ async function start(): Promise<void> {
       return request.ip;
     },
   });
+
+  await validatePlugin(server);
+  await errorHandlerPlugin(server);
+  await server.register(categoriesV1Routes);
+  await server.register(transactionsV1Routes);
+  await server.register(budgetsV1Routes);
+  await server.register(authV1Routes);
 
   // ── Health Check ─────────────────────────────────────────────────────────
 

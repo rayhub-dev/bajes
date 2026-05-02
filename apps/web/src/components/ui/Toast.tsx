@@ -21,10 +21,10 @@ const toastIcons: Record<ToastType, React.ReactNode> = {
 };
 
 const toastStyles: Record<ToastType, string> = {
-  success: "bg-bajes-green text-bajes-black border-bajes-black",
-  error: "bg-bajes-red text-white border-bajes-black",
-  warning: "bg-bajes-yellow text-bajes-black border-bajes-black",
-  info: "bg-bajes-blue text-white border-bajes-black",
+  success: "bg-bajes-green text-bajes-black border-bajes-black dark:border-white/20",
+  error: "bg-bajes-red text-white border-bajes-black dark:border-white/20",
+  warning: "bg-bajes-yellow text-bajes-black border-bajes-black dark:border-white/20",
+  info: "bg-bajes-blue text-white border-bajes-black dark:border-white/20",
 };
 
 // Simple global toast state
@@ -57,7 +57,7 @@ function ToastItem({
   return (
     <div
       className={cn(
-        "border-3 flex animate-slide-up items-center gap-2 rounded-xl px-4 py-3 font-sans text-sm font-semibold shadow-brutal-sm",
+        "border-3 flex animate-slide-up items-center gap-2 rounded-xl px-4 py-3 font-sans text-sm font-semibold shadow-brutal-sm dark:shadow-brutal-dark-sm",
         toastStyles[toast.type],
       )}
     >
@@ -91,7 +91,7 @@ function ToastContainer(): React.ReactElement {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed left-4 right-4 top-4 z-[100] flex flex-col gap-2">
+    <div className="pointer-events-none fixed left-4 right-4 top-4 z-[100] flex flex-col gap-2 lg:left-[calc(16rem+1rem)]">
       {toasts.map((toast) => (
         <div key={toast.id} className="pointer-events-auto">
           <ToastItem toast={toast} onRemove={handleRemove} />

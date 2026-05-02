@@ -40,7 +40,7 @@ function ProgressBar({
     <div className={cn("w-full", className)}>
       {showLabel && (
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400">
             {Math.round(percentage)}%
           </span>
           <span
@@ -49,8 +49,8 @@ function ProgressBar({
               percentage > 80
                 ? "text-bajes-red"
                 : percentage > 60
-                  ? "text-yellow-600"
-                  : "text-green-600",
+                  ? "text-yellow-600 dark:text-yellow-400"
+                  : "text-green-600 dark:text-green-400",
             )}
           >
             {getProgressLabel(percentage)}
@@ -59,7 +59,7 @@ function ProgressBar({
       )}
       <div
         className={cn(
-          "w-full overflow-hidden rounded-full border-2 border-bajes-black bg-gray-200",
+          "w-full overflow-hidden rounded-full border-2 border-bajes-black bg-gray-200 dark:border-white/20 dark:bg-white/10",
           sizeStyles[size],
         )}
       >

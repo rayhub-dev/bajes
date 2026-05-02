@@ -1,7 +1,7 @@
 # Bajes — Development TODO
 
 **Project:** Bajes (Money Tracker MVP PWA)  
-**Last Updated:** 2026-04-30  
+**Last Updated:** 2026-05-02  
 **Status Legend:** ⬜ Belum mulai | 🔄 In Progress | ✅ Done | ❌ Blocked | ⏭️ Skipped
 
 ---
@@ -31,17 +31,17 @@
 #### 1.3 Database
 
 - ⬜ Setup Supabase project (PostgreSQL 15)
-- ⬜ Prisma schema — Model `User`
-- ⬜ Prisma schema — Model `Session`
-- ⬜ Prisma schema — Model `Category` + enum `CategoryType`
-- ⬜ Prisma schema — Model `Transaction` + enum `TransactionType`
-- ⬜ Prisma schema — Model `Budget` + enum `PeriodType`
-- ⬜ Prisma schema — Model `PushSubscription`
-- ⬜ Prisma schema — Model `AuditLog`
-- ⬜ Run initial migration ke Supabase staging
-- ⬜ Seed data — 5 default expense categories + 2 income categories
-- ⬜ Enable Row Level Security (RLS) di semua tabel
-- ⬜ Verify seed data berhasil dijalankan
+- ✅ Prisma schema — Model `User` (2026-05-01)
+- ✅ Prisma schema — Model `Session` (2026-05-01)
+- ✅ Prisma schema — Model `Category` + enum `CategoryType` (2026-05-01)
+- ✅ Prisma schema — Model `Transaction` + enum `TransactionType` (2026-05-01)
+- ✅ Prisma schema — Model `Budget` + enum `PeriodType` (2026-05-01)
+- ✅ Prisma schema — Model `PushSubscription` (2026-05-01)
+- ✅ Prisma schema — Model `AuditLog` (2026-05-01)
+- ✅ Run initial migration ke Supabase staging (2026-05-01)
+- ✅ Seed data — 5 default expense categories + 2 income categories (2026-05-01)
+- ✅ Enable Row Level Security (RLS) di semua tabel (2026-05-01)
+- ✅ Verify seed data berhasil dijalankan (2026-05-01)
 
 #### 1.4 Shared Packages
 
@@ -57,34 +57,38 @@
 #### 1.5 Backend Architecture
 
 - ✅ Fastify server entry point (`server.ts`) (2026-04-30)
-- ⬜ Repository pattern setup (route -> service -> repository -> Prisma)
+- ✅ Repository pattern setup (route -> service -> repository -> Prisma) (2026-05-01)
 - ✅ API response format standar (success/error/paginated) (2026-04-30)
 - ✅ Pino structured logging setup (2026-04-30)
 - ✅ Request ID middleware (2026-04-30)
-- ⬜ Error handler global (format standar, jangan expose detail)
+- ✅ Error handler global (format standar, jangan expose detail) (2026-05-01)
 
 #### 1.6 Frontend Base
 
-- ⬜ Next.js App Router folder structure (`(auth)/`, `(app)/`)
+- ✅ Next.js App Router folder structure (`(auth)/`, `(app)/`) (2026-05-01)
 - ✅ Tailwind CSS setup (2026-04-30)
-- ⬜ Axios instance + base config (`credentials: 'include'`)
-- ⬜ IndexedDB schema (Dexie.js) — `LocalTransaction`, `LocalBudget`
-- ⬜ Zustand base store setup
-- ⬜ React Query provider setup
+- ✅ Axios instance + base config (`credentials: 'include'`) (2026-05-01)
+- ✅ IndexedDB schema (Dexie.js) — `LocalTransaction`, `LocalBudget` (2026-05-01)
+- ✅ Zustand base store setup (2026-05-01)
+- ✅ React Query provider setup (2026-05-01)
 
 #### 1.7 CI/CD & Deployment
 
-- ⬜ GitHub Actions — quality job (type-check, lint, test, audit, build)
-- ⬜ GitHub Actions — e2e job (Playwright)
-- ⬜ GitHub Actions — Lighthouse CI job
-- ⬜ GitHub Actions — deploy staging (develop branch)
-- ⬜ GitHub Actions — deploy production (main branch)
-- ⬜ Vercel project setup (apps/web)
-- ⬜ Railway project setup (apps/api)
-- ⬜ Cloudflare DNS + SSL config
-- ⬜ Branch strategy: `main` -> production, `develop` -> staging
-- ⬜ PR rules: 1 reviewer, CI pass, no high/critical audit
+- ✅ GitHub Actions — quality job (type-check, lint, test, audit, build) (2026-05-02)
+- ✅ GitHub Actions — e2e job (Playwright) (2026-05-02)
+- ✅ GitHub Actions — Lighthouse CI job (2026-05-02)
+- ✅ GitHub Actions — deploy staging (develop branch → VPS via SSH+rsync) (2026-05-02)
+- ✅ GitHub Actions — deploy production (main branch → VPS via SSH+rsync) (2026-05-02)
+- ⬜ Vercel project setup (apps/web) — connect GitHub repo
+- ⏭️ Railway project setup (apps/api) — skipped, using VPS with PM2+Nginx
+- ⬜ Cloudflare DNS + SSL config (after domain purchase)
+- ✅ Branch strategy: `main` -> production, `develop` -> staging (2026-05-02)
+- ⬜ PR rules: 1 reviewer, CI pass, no high/critical audit (configure in GitHub)
 - ✅ `.env.example` untuk semua environment variables (2026-04-30)
+- ✅ PM2 ecosystem config (`ecosystem.config.cjs`) (2026-05-02)
+- ✅ Nginx reverse proxy config template (2026-05-02)
+- ✅ VPS setup script (`deploy/vps-setup.sh`) (2026-05-02)
+- ✅ Dependabot config (`.github/dependabot.yml`) (2026-05-02)
 
 #### 1.8 Monitoring
 
@@ -252,21 +256,21 @@
 
 ### PRD-02: Authentication & Session Management
 
-#### 2.1 Google SSO (Firebase Auth)
+#### 2.1 Supabase Auth (Email + Google SSO)
 
-- ⬜ Firebase project setup + config
-- ⬜ Firebase Auth JS SDK integration (frontend)
-- ⬜ Firebase Admin SDK setup (backend)
-- ⬜ Login page UI — Google SSO button + Guest option
-- ⬜ Auth layout (no bottom nav)
+- ✅ Supabase project setup + config (2026-05-02)
+- ✅ Supabase Auth JS SDK integration (frontend) (2026-05-02)
+- ✅ Supabase Admin SDK setup (backend — service role key) (2026-05-02)
+- ✅ Login page UI — Email/Password + Google SSO + Guest option (2026-05-02)
+- ✅ Auth layout (no bottom nav) (2026-05-01)
 
 #### 2.2 Server-Side Session
 
-- ⬜ `POST /v1/auth/session` — tukar Firebase ID Token -> server session
-- ⬜ Set HttpOnly cookies: `access_token` (15min), `refresh_token` (7d), `csrf_token`
-- ⬜ `POST /v1/auth/refresh` — rotate refresh token
-- ⬜ `POST /v1/auth/logout` — revoke session + clear cookies
-- ⬜ `GET /v1/auth/me` — get current user
+- ⏭️ `POST /v1/auth/session` — skipped (Supabase handles token exchange)
+- ⏭️ Set HttpOnly cookies — skipped (using Supabase JWT Bearer tokens)
+- ⏭️ `POST /v1/auth/refresh` — skipped (Supabase client auto-refreshes)
+- ✅ `POST /v1/auth/logout` — revoke session + clear cookies (2026-05-02)
+- ✅ `GET /v1/auth/me` — get current user (2026-05-02)
 - ⬜ `DELETE /v1/auth/sessions/:sessionId` — revoke specific session
 
 #### 2.3 CSRF Protection
@@ -277,20 +281,20 @@
 
 #### 2.4 Auth Middleware
 
-- ⬜ `requireAuth.ts` — verify JWT dari cookie, attach user ke request
-- ⬜ Return 401 `AUTH_001` jika expired
-- ⬜ Refresh token hash di database (bukan plaintext)
+- ✅ `requireAuth.ts` — verify Supabase JWT Bearer token, attach user ke request (2026-05-02)
+- ✅ Return 401 `AUTH_001` jika expired/invalid (2026-05-02)
+- ⏭️ Refresh token hash di database — skipped (Supabase manages refresh tokens)
 
 #### 2.5 Frontend Auth
 
-- ⬜ Auth store (Zustand): `loginWithGoogle`, `enterGuestMode`, `logout`, `refreshSession`
-- ⬜ Axios interceptor: attach CSRF token, auto-refresh on 401, retry request
-- ⬜ Route protection middleware (`middleware.ts`): redirect ke `/login` jika no cookie
-- ⬜ Guest mode flag di localStorage
+- ✅ Auth store (Zustand): user/session state + AuthProvider component (2026-05-02)
+- ✅ Axios interceptor: attach Bearer token, auto-refresh on 401, retry request (2026-05-02)
+- ✅ Route protection middleware (`middleware.ts`): redirect ke `/login` jika no auth cookie (2026-05-02)
+- ✅ Guest mode flag di localStorage (2026-05-02)
 
 #### 2.6 Guest Mode
 
-- ⬜ "Coba tanpa akun" button di landing
+- ✅ "Coba tanpa akun" button di landing (2026-05-02)
 - ⬜ Data di IndexedDB only (tidak kirim ke server)
 - ⬜ Max 10 transaksi — prompt daftar setelahnya
 - ⬜ Banner "Buat akun untuk menyimpan data" setelah 3 transaksi
@@ -321,19 +325,19 @@
 
 #### 3.1 API Endpoints
 
-- ⬜ `GET /v1/transactions` — list dengan filter + pagination
-- ⬜ `POST /v1/transactions` — create (idempotent via clientId)
-- ⬜ `PUT /v1/transactions/:id` — update (verify ownership)
-- ⬜ `DELETE /v1/transactions/:id` — soft delete
-- ⬜ `POST /v1/transactions/batch` — batch sync (max 50 ops)
-- ⬜ `GET /v1/categories` — list default + user categories
+- ✅ `GET /v1/transactions` — list dengan filter + pagination (2026-05-02)
+- ✅ `POST /v1/transactions` — create (idempotent via clientId) (2026-05-02)
+- ✅ `PUT /v1/transactions/:id` — update (verify ownership) (2026-05-02)
+- ✅ `DELETE /v1/transactions/:id` — soft delete (2026-05-02)
+- ✅ `POST /v1/transactions/batch` — batch sync (max 50 ops) (2026-05-02)
+- ✅ `GET /v1/categories` — list default + user categories (2026-05-01)
 
 #### 3.2 Backend
 
-- ⬜ `transactionRepository.ts` — findMany, findById, create, update, softDelete, findByClientId, batchCreate
-- ⬜ `transactionService.ts` — list, create, update, delete, batchSync
-- ⬜ Idempotency: duplicate clientId return existing record (bukan error)
-- ⬜ Ownership validation: userId dari session harus match
+- ✅ `transactionRepository.ts` — findMany, findById, create, update, softDelete, findByClientId, batchCreate (2026-05-02)
+- ✅ `transactionService.ts` — list, create, update, delete, batchSync (2026-05-02)
+- ✅ Idempotency: duplicate clientId return existing record (bukan error) (2026-05-02)
+- ✅ Ownership validation: userId dari session harus match (2026-05-02)
 
 #### 3.3 Frontend — Transaction Form
 
@@ -366,12 +370,12 @@
 #### 3.6 Offline-First & Sync
 
 - ⬜ Zustand store: `addTransaction`, `updateTransaction`, `deleteTransaction`, `syncPendingTransactions`
-- ⬜ React Query hooks: `useTransactions`, `useCreateTransaction`, `useUpdateTransaction`, `useDeleteTransaction`
+- ✅ React Query hooks: `useTransactions`, `useCreateTransaction`, `useUpdateTransaction`, `useDeleteTransaction` (2026-05-02)
 - ⬜ Data SELALU simpan ke IndexedDB dulu -> UI update optimistic
-- ⬜ Sync queue: ambil `syncStatus = "pending"` dari IndexedDB
-- ⬜ Batch sync via `POST /v1/transactions/batch` (max 50)
-- ⬜ Update `syncStatus` ke "synced" / "failed"
-- ⬜ Background Sync API + fallback (app open + 30s periodic + online event)
+- ✅ Sync queue: ambil `syncStatus = "pending"` dari IndexedDB (2026-05-02)
+- ✅ Batch sync via `POST /v1/transactions/batch` (max 50) (2026-05-02)
+- ✅ Update `syncStatus` ke "synced" / "failed" (2026-05-02)
+- ✅ Background Sync API + fallback (app open + 30s periodic + online event) (2026-05-02)
 - ⬜ Sync status indicator di UI (pending/synced)
 - ⬜ Conflict resolution: last-write-wins berdasarkan `updatedAt`
 

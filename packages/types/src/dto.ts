@@ -1,4 +1,4 @@
-import { type CategoryType, type TransactionType, type PeriodType } from "./enums";
+import { type CategoryType, type TransactionType, type PeriodType } from "./enums.js";
 
 // ─── User ────────────────────────────────────────────────────────────────────
 
@@ -7,6 +7,7 @@ export interface UserDTO {
   email: string;
   displayName: string | null;
   photoUrl: string | null;
+  authProvider: string;
   currencyCode: string;
   isGuest: boolean;
   createdAt: string;

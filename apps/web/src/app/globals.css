@@ -6,6 +6,23 @@
   :root {
     --background: #faf8f5;
     --foreground: #000000;
+    --surface: #ffffff;
+    --surface-2: #f5f5f5;
+    --muted: #6b7280;
+    --muted-2: #9ca3af;
+    --border-subtle: #e5e7eb;
+    --divider: #f3f4f6;
+  }
+
+  .dark {
+    --background: #121212;
+    --foreground: #f5f5f5;
+    --surface: #1e1e1e;
+    --surface-2: #2a2a2a;
+    --muted: #a1a1aa;
+    --muted-2: #71717a;
+    --border-subtle: #3f3f46;
+    --divider: #27272a;
   }
 
   html {
@@ -14,7 +31,7 @@
   }
 
   body {
-    @apply bg-bajes-bg text-bajes-black font-sans antialiased;
+    @apply bg-bajes-bg font-sans text-bajes-black antialiased dark:bg-bajes-bg-dark dark:text-white;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -34,7 +51,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-bajes-black/20 rounded-full;
+    @apply rounded-full bg-bajes-black/20 dark:bg-white/20;
   }
 
   /* Number input - hide spinners */
@@ -52,29 +69,35 @@
 @layer components {
   /* Neo-Brutalism card base */
   .card-brutal {
-    @apply bg-white border-3 border-bajes-black rounded-2xl shadow-brutal;
+    @apply border-3 rounded-2xl border-bajes-black bg-white shadow-brutal
+           dark:border-white/20 dark:bg-bajes-surface-dark dark:shadow-brutal-dark;
   }
 
   /* Neo-Brutalism button base */
   .btn-brutal {
-    @apply border-3 border-bajes-black rounded-xl font-display font-bold uppercase tracking-wide
+    @apply border-3 rounded-xl border-bajes-black font-display font-bold uppercase tracking-wide
            shadow-brutal transition-all duration-150
            hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-brutal-hover
-           active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
+           active:translate-x-[4px] active:translate-y-[4px] active:shadow-none
+           dark:border-white/20 dark:shadow-brutal-dark
+           dark:hover:shadow-brutal-dark-hover dark:active:shadow-none;
   }
 
   /* Neo-Brutalism input base */
   .input-brutal {
-    @apply w-full border-3 border-bajes-black rounded-xl px-4 py-3 font-sans text-base
-           bg-white placeholder:text-gray-400
-           focus:outline-none focus:ring-2 focus:ring-bajes-yellow focus:shadow-brutal-sm
-           transition-all duration-150;
+    @apply border-3 w-full rounded-xl border-bajes-black bg-white px-4 py-3 font-sans text-base
+           placeholder:text-gray-400
+           focus:shadow-brutal-sm focus:outline-none focus:ring-2 focus:ring-bajes-yellow
+           transition-all duration-150
+           dark:border-white/20 dark:bg-bajes-surface-dark-2 dark:text-white
+           dark:placeholder:text-gray-500 dark:focus:shadow-brutal-dark-sm dark:focus:ring-bajes-yellow/60;
   }
 
   /* Badge base */
   .badge-brutal {
-    @apply inline-flex items-center border-2 border-bajes-black rounded-full px-3 py-1
-           text-xs font-bold uppercase tracking-wider shadow-brutal-sm;
+    @apply inline-flex items-center rounded-full border-2 border-bajes-black px-3 py-1
+           text-xs font-bold uppercase tracking-wider shadow-brutal-sm
+           dark:border-white/20 dark:shadow-brutal-dark-sm;
   }
 }
 
@@ -95,5 +118,14 @@
 
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Muted text helper */
+  .text-muted {
+    color: var(--muted);
+  }
+
+  .text-muted-2 {
+    color: var(--muted-2);
   }
 }

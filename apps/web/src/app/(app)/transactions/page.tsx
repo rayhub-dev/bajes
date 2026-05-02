@@ -8,6 +8,7 @@ import {
   type FilterType,
 } from "@/components/features/TransactionList/TransactionFilters";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useDeleteTransaction } from "@/hooks/useTransactions";
 
 export default function TransactionsPage(): React.ReactElement {
   const now = new Date();
@@ -16,37 +17,51 @@ export default function TransactionsPage(): React.ReactElement {
   const [filterType, setFilterType] = useState<FilterType>("ALL");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const deleteMutation = useDeleteTransaction();
+
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01T00:00:00.000Z`;
+  const endDate = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+
+  const filters = {
+    startDate,
+    endDate,
+    ...(filterType !== "ALL" ? { type: filterType as "INCOME" | "EXPENSE" } : {}),
+  };
+
   const handleDelete = (): void => {
     if (deleteId) {
-      // TODO: integrate with Zustand store
-      console.log("Delete transaction:", deleteId);
-      setDeleteId(null);
+      deleteMutation.mutate(deleteId, {
+        onSuccess: () => setDeleteId(null),
+      });
     }
   };
 
   return (
-    <div className="mx-auto max-w-lg space-y-4 px-4 py-5">
-      {/* Header */}
-      <h1 className="font-display text-xl font-bold uppercase">Riwayat Transaksi</h1>
-
-      {/* Month Navigator */}
-      <MonthNavigator
-        year={year}
-        month={month}
-        onChange={(y, m) => {
-          setYear(y);
-          setMonth(m);
-        }}
-      />
+    <div className="mx-auto max-w-7xl space-y-4 px-4 py-5 md:px-6 lg:px-8 lg:py-8">
+      {/* Header row */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="font-display text-xl font-bold uppercase lg:text-2xl">Riwayat Transaksi</h1>
+        <MonthNavigator
+          year={year}
+          month={month}
+          onChange={(y, m) => {
+            setYear(y);
+            setMonth(m);
+          }}
+        />
+      </div>
 
       {/* Filters */}
       <TransactionFilters activeType={filterType} onTypeChange={setFilterType} />
 
-      {/* Transaction List */}
-      <TransactionList
-        onItemTap={(id) => console.log("Edit:", id)}
-        onItemDelete={(id) => setDeleteId(id)}
-      />
+      {/* Transaction List — constrained width for readability on large screens */}
+      <div className="max-w-3xl">
+        <TransactionList
+          filters={filters}
+          onItemTap={(id) => console.log("Edit:", id)}
+          onItemDelete={(id) => setDeleteId(id)}
+        />
+      </div>
 
       {/* Delete Confirm Dialog */}
       <ConfirmDialog

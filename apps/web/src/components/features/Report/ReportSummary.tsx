@@ -18,33 +18,37 @@ function ReportSummary({
 
   return (
     <Card>
-      <p className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">
+      <p className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
         Ringkasan Bulan Ini
       </p>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-gray-600">Total Pemasukan</span>
-          <span className="font-display font-bold text-green-600">
+          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+            Total Pemasukan
+          </span>
+          <span className="font-display font-bold text-green-600 dark:text-green-400">
             +{formatCurrency(totalIncomeCents)}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-gray-600">Total Pengeluaran</span>
+          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+            Total Pengeluaran
+          </span>
           <span className="font-display font-bold text-bajes-red">
             -{formatCurrency(totalExpenseCents)}
           </span>
         </div>
 
-        <div className="h-[3px] rounded-full bg-bajes-black" />
+        <div className="h-[3px] rounded-full bg-bajes-black dark:bg-white/20" />
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-bold">Net Balance</span>
           <span
             className={cn(
               "font-display text-xl font-bold",
-              isPositive ? "text-green-600" : "text-bajes-red",
+              isPositive ? "text-green-600 dark:text-green-400" : "text-bajes-red",
             )}
           >
             {isPositive ? "+" : "-"}

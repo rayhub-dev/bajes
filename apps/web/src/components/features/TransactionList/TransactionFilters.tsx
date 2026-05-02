@@ -28,8 +28,8 @@ function TransactionFilters({
           className={cn(
             "rounded-lg border-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all",
             activeType === opt.value
-              ? "border-bajes-black bg-bajes-black text-white shadow-none"
-              : "border-gray-300 bg-white text-gray-500 hover:border-bajes-black",
+              ? "border-bajes-black bg-bajes-black text-white shadow-none dark:border-white/20 dark:bg-white dark:text-bajes-black"
+              : "border-gray-300 bg-white text-gray-500 hover:border-bajes-black dark:border-white/10 dark:bg-bajes-surface-dark dark:text-gray-400 dark:hover:border-white/30",
           )}
         >
           {opt.label}

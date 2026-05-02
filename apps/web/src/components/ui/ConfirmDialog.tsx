@@ -28,12 +28,15 @@ function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 animate-fade-in bg-black/40" onClick={onCancel} />
+      <div
+        className="absolute inset-0 animate-fade-in bg-black/40 dark:bg-black/60"
+        onClick={onCancel}
+      />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-sm animate-bounce-in rounded-2xl border-4 border-bajes-black bg-white p-6 shadow-brutal-lg">
+      <div className="relative w-full max-w-sm animate-bounce-in rounded-2xl border-4 border-bajes-black bg-white p-6 shadow-brutal-lg dark:border-white/20 dark:bg-bajes-surface-dark dark:shadow-brutal-dark">
         <h3 className="mb-2 font-display text-lg font-bold uppercase">{title}</h3>
-        <p className="mb-6 font-sans text-sm text-gray-600">{message}</p>
+        <p className="mb-6 font-sans text-sm text-gray-600 dark:text-gray-400">{message}</p>
         <div className="flex gap-3">
           <Button variant="outline" size="md" fullWidth onClick={onCancel}>
             {cancelText}

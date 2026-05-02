@@ -1,0 +1,140 @@
+# ─── Deploy Production: VPS (main branch) ─────────────────────────────────────
+# Deploys API to VPS via SSH + rsync when main branch is pushed
+# Frontend auto-deploys to Vercel via Vercel GitHub integration
+# Requires manual approval via GitHub environment protection rules
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9.12.3"
+  DEPLOY_PATH: /home/deploy/bajes-production
+  PM2_APP_NAME: bajes-api-production
+
+jobs:
+  # ─── Build API ─────────────────────────────────────────────────────────────────
+  build:
+    name: Build API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @bajes/api db:generate
+
+      - name: Build API
+        run: pnpm --filter @bajes/api build
+
+      - name: Prepare deployment package
+        run: |
+          mkdir -p deploy-package
+          cp -r apps/api/dist deploy-package/dist
+          cp -r apps/api/prisma deploy-package/prisma
+          cp apps/api/package.json deploy-package/package.json
+          cp ecosystem.config.cjs deploy-package/ecosystem.config.cjs
+          cp package.json deploy-package/root-package.json
+          cp pnpm-lock.yaml deploy-package/pnpm-lock.yaml
+          cp pnpm-workspace.yaml deploy-package/pnpm-workspace.yaml
+
+      - name: Upload deployment package
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-package-production
+          path: deploy-package/
+          retention-days: 1
+
+  # ─── Deploy to VPS ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    steps:
+      - name: Download deployment package
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-package-production
+          path: deploy-package/
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            mkdir -p ${{ env.DEPLOY_PATH }}
+
+      - name: Rsync files to VPS
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete --exclude='node_modules' --exclude='.env'
+          path: deploy-package/
+          remote_path: ${{ env.DEPLOY_PATH }}/
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
+          remote_port: ${{ secrets.VPS_PORT || 22 }}
+
+      - name: Post-deploy commands
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }}
+
+            # Install production dependencies
+            npm install --omit=dev
+
+            # Generate Prisma client on server
+            npx prisma generate --schema=prisma/schema.prisma
+
+            # Run database migrations
+            npx prisma migrate deploy --schema=prisma/schema.prisma
+
+            # Restart PM2 process
+            pm2 startOrRestart ecosystem.config.cjs --env production --update-env
+            pm2 save
+
+            echo "✅ Production deployment complete"
+
+  # ─── Post-deploy health check ──────────────────────────────────────────────────
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Wait for server restart
+        run: sleep 10
+
+      - name: Check API health
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.API_URL }}/health)
+          if [ "$response" != "200" ]; then
+            echo "❌ Health check failed with status: $response"
+            exit 1
+          fi
+          echo "✅ API is healthy (HTTP 200)"

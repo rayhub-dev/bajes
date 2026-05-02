@@ -1,6 +1,7 @@
 {
   "name": "@bajes/schemas",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Shared Zod validation schemas for Bajes",
   "main": "./dist/index.js",

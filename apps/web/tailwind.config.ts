@@ -6,11 +6,15 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         bajes: {
           bg: "#FAF8F5",
+          "bg-dark": "#121212",
+          "surface-dark": "#1E1E1E",
+          "surface-dark-2": "#2A2A2A",
           yellow: "#E5FF00",
           pink: "#FF80DF",
           blue: "#0044FF",
@@ -32,6 +36,9 @@ const config: Config = {
         "brutal-hover": "2px 2px 0px 0px rgba(0,0,0,1)",
         "brutal-yellow": "4px 4px 0px 0px #E5FF00",
         "brutal-pink": "4px 4px 0px 0px #FF80DF",
+        "brutal-dark": "4px 4px 0px 0px rgba(255,255,255,0.3)",
+        "brutal-dark-sm": "2px 2px 0px 0px rgba(255,255,255,0.3)",
+        "brutal-dark-hover": "2px 2px 0px 0px rgba(255,255,255,0.3)",
         none: "none",
       },
       borderRadius: {

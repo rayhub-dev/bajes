@@ -33,7 +33,7 @@ function MonthComparison({
       <div className="flex items-center gap-3">
         <div
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-xl border-2 border-bajes-black",
+            "flex h-10 w-10 items-center justify-center rounded-xl border-2 border-bajes-black dark:border-white/20",
             isIncrease ? "bg-white/20" : "bg-bajes-black/10",
           )}
         >

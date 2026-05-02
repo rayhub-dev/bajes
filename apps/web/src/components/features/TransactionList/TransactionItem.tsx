@@ -44,7 +44,7 @@ function TransactionItem({
     >
       {/* Category Icon */}
       <div
-        className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-bajes-black text-xl shadow-brutal-sm"
+        className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-bajes-black text-xl shadow-brutal-sm dark:border-white/20 dark:shadow-brutal-dark-sm"
         style={{ backgroundColor: categoryColor + "30" }}
       >
         {categoryIcon}
@@ -63,11 +63,11 @@ function TransactionItem({
           {syncStatus === "synced" && (
             <Cloud
               size={12}
-              className="flex-shrink-0 text-gray-300 opacity-0 transition-opacity group-hover:opacity-100"
+              className="flex-shrink-0 text-gray-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-600"
             />
           )}
         </div>
-        {note && <p className="truncate text-xs text-gray-500">{note}</p>}
+        {note && <p className="truncate text-xs text-gray-500 dark:text-gray-400">{note}</p>}
       </div>
 
       {/* Amount & Time */}
@@ -75,13 +75,15 @@ function TransactionItem({
         <p
           className={cn(
             "font-display text-sm font-bold",
-            type === "EXPENSE" ? "text-bajes-red" : "text-green-600",
+            type === "EXPENSE" ? "text-bajes-red" : "text-green-600 dark:text-green-400",
           )}
         >
           {type === "EXPENSE" ? "-" : "+"}
           {formatCurrency(amountCents)}
         </p>
-        <p className="text-[10px] font-semibold uppercase text-gray-400">{time}</p>
+        <p className="text-[10px] font-semibold uppercase text-gray-400 dark:text-gray-500">
+          {time}
+        </p>
       </div>
 
       {/* Delete button (shown on context menu) */}
@@ -92,7 +94,7 @@ function TransactionItem({
             onDelete?.();
             setShowDelete(false);
           }}
-          className="rounded-lg border-2 border-bajes-black bg-bajes-red p-2 text-white shadow-brutal-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+          className="rounded-lg border-2 border-bajes-black bg-bajes-red p-2 text-white shadow-brutal-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none dark:border-white/20 dark:shadow-brutal-dark-sm"
         >
           <Trash2 size={16} strokeWidth={3} />
         </button>

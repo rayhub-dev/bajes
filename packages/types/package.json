@@ -1,6 +1,7 @@
 {
   "name": "@bajes/types",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Shared TypeScript types for Bajes",
   "main": "./dist/index.js",

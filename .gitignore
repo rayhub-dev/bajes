@@ -44,3 +44,14 @@ public/workbox-*.js.map
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Debug output files
+apps/api/err*.txt
+apps/api/out*.txt
+apps/api/server-*.txt
+
+# TypeScript build info
+*.tsbuildinfo
+
+# PM2 logs
+logs/

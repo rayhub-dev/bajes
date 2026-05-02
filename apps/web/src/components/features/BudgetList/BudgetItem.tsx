@@ -29,14 +29,14 @@ function BudgetItem({
     return (
       <button onClick={onTap} className="group flex w-full items-center gap-3 px-1 py-3 text-left">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-gray-300 text-xl opacity-50"
+          className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-gray-300 text-xl opacity-50 dark:border-white/10"
           style={{ backgroundColor: categoryColor + "20" }}
         >
           {categoryIcon}
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-gray-400">{categoryName}</p>
-          <p className="text-xs text-gray-400">Tap untuk set bajes</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Tap untuk set bajes</p>
         </div>
       </button>
     );
@@ -46,14 +46,14 @@ function BudgetItem({
     <button onClick={onTap} className="group w-full px-1 py-3 text-left">
       <div className="mb-2 flex items-center gap-3">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-bajes-black text-xl shadow-brutal-sm"
+          className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-bajes-black text-xl shadow-brutal-sm dark:border-white/20 dark:shadow-brutal-dark-sm"
           style={{ backgroundColor: categoryColor + "30" }}
         >
           {categoryIcon}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{categoryName}</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             {formatCurrency(spentCents)} / {formatCurrency(budgetCents)}
           </p>
         </div>
@@ -61,7 +61,7 @@ function BudgetItem({
           <p
             className={cn(
               "font-display text-sm font-bold",
-              isOver ? "text-bajes-red" : "text-bajes-black",
+              isOver ? "text-bajes-red" : "text-bajes-black dark:text-white",
             )}
           >
             {isOver
@@ -71,7 +71,7 @@ function BudgetItem({
           <p
             className={cn(
               "text-[10px] font-bold uppercase",
-              isOver ? "text-bajes-red" : "text-gray-500",
+              isOver ? "text-bajes-red" : "text-gray-500 dark:text-gray-400",
             )}
           >
             {isOver ? "Over budget!" : "tersisa"}

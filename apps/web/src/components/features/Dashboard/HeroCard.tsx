@@ -43,7 +43,7 @@ function HeroCard({
 
       <div className="relative">
         <div className="mb-1 flex items-start justify-between">
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             {hasBudget ? "Sisa Bajes Lo" : "Balance Bulan Ini"}
           </p>
           <Badge variant={status.variant}>
@@ -54,7 +54,7 @@ function HeroCard({
         <h1
           className={cn(
             "mt-2 font-display text-4xl font-bold",
-            isNegative ? "text-bajes-red" : "text-bajes-black",
+            isNegative ? "text-bajes-red" : "text-bajes-black dark:text-white",
           )}
         >
           {isNegative && "-"}
@@ -62,7 +62,7 @@ function HeroCard({
         </h1>
 
         {hasBudget && (
-          <p className="mt-1 text-xs font-semibold text-gray-500">
+          <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
             dari total bajes {formatCurrency(totalBudgetCents)}
           </p>
         )}

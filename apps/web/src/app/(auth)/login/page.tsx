@@ -1,17 +1,72 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { signInWithEmail, signUpWithEmail, signInWithGoogle } from "@/lib/supabase/auth";
+import { apiClient } from "@/lib/api/client";
 
 export default function LoginPage(): React.ReactElement {
-  const handleGoogleLogin = (): void => {
-    // TODO: Firebase Auth Google SSO
-    console.log("Google login");
+  const router = useRouter();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        await signUpWithEmail(email, password);
+        setSuccessMessage("Cek email lo buat verifikasi akun! 📧");
+        setLoading(false);
+        return;
+      }
+
+      const { session } = await signInWithEmail(email, password);
+      if (session) {
+        // Provision user in DB with timeout
+        try {
+          await apiClient.get("/v1/auth/me", {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            timeout: 10000,
+          });
+        } catch {
+          // API might be down — still allow navigation since Supabase auth succeeded
+          console.warn("Failed to provision user, will retry via AuthProvider");
+        }
+        document.cookie = "bajes-authenticated=true; Path=/; SameSite=Lax";
+        document.cookie = "bajes-guest-mode=; Path=/; Max-Age=0; SameSite=Lax";
+      }
+      router.push("/dashboard");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Terjadi kesalahan";
+      setError(message);
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async (): Promise<void> => {
+    setError(null);
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Google login gagal";
+      setError(message);
+    }
   };
 
   const handleGuestMode = (): void => {
-    // TODO: Enter guest mode
-    console.log("Guest mode");
+    localStorage.setItem("bajes-guest-mode", "true");
+    document.cookie = "bajes-guest-mode=true; Path=/; SameSite=Lax";
+    router.push("/dashboard");
   };
 
   return (
@@ -30,14 +85,78 @@ export default function LoginPage(): React.ReactElement {
         <div className="space-y-4">
           {/* Welcome text */}
           <div className="mb-2 text-center">
-            <h2 className="font-display text-xl font-bold uppercase">Halo Bestie! 👋</h2>
+            <h2 className="font-display text-xl font-bold uppercase">
+              {isSignUp ? "Buat Akun 🚀" : "Halo Bestie! 👋"}
+            </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Yuk mulai catat keuangan lo biar gak boncos terus
+              {isSignUp
+                ? "Daftar dulu biar data lo aman"
+                : "Yuk mulai catat keuangan lo biar gak boncos terus"}
             </p>
           </div>
 
+          {/* Error/Success Messages */}
+          {error && (
+            <div className="rounded-lg border-2 border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-900/20 dark:text-red-400">
+              {error}
+            </div>
+          )}
+          {successMessage && (
+            <div className="rounded-lg border-2 border-green-300 bg-green-50 p-3 text-sm text-green-700 dark:border-green-500/30 dark:bg-green-900/20 dark:text-green-400">
+              {successMessage}
+            </div>
+          )}
+
+          {/* Email/Password Form */}
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <input
+                type="email"
+                placeholder="Email lo"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full rounded-xl border-2 border-bajes-black bg-white px-4 py-3 text-sm font-semibold text-bajes-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-bajes-yellow dark:border-white/20 dark:bg-bajes-surface-dark dark:text-white dark:placeholder:text-gray-500"
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                placeholder="Password (min 6 karakter)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full rounded-xl border-2 border-bajes-black bg-white px-4 py-3 text-sm font-semibold text-bajes-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-bajes-yellow dark:border-white/20 dark:bg-bajes-surface-dark dark:text-white dark:placeholder:text-gray-500"
+              />
+            </div>
+            <Button variant="primary" size="lg" fullWidth disabled={loading}>
+              {loading ? "Loading..." : isSignUp ? "Daftar" : "Login"}
+            </Button>
+          </form>
+
+          {/* Toggle Sign Up / Login */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError(null);
+              setSuccessMessage(null);
+            }}
+            className="w-full text-center text-sm font-semibold text-gray-500 hover:text-bajes-black dark:text-gray-400 dark:hover:text-white"
+          >
+            {isSignUp ? "Udah punya akun? Login" : "Belum punya akun? Daftar"}
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="h-[2px] flex-1 bg-gray-200 dark:bg-white/10" />
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">atau</span>
+            <div className="h-[2px] flex-1 bg-gray-200 dark:bg-white/10" />
+          </div>
+
           {/* Google SSO Button */}
-          <Button variant="primary" size="lg" fullWidth onClick={handleGoogleLogin}>
+          <Button variant="outline" size="lg" fullWidth onClick={handleGoogleLogin}>
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -61,9 +180,9 @@ export default function LoginPage(): React.ReactElement {
 
           {/* Divider */}
           <div className="flex items-center gap-3">
-            <div className="h-[2px] flex-1 bg-gray-200" />
+            <div className="h-[2px] flex-1 bg-gray-200 dark:bg-white/10" />
             <span className="text-xs font-bold uppercase tracking-wider text-gray-400">atau</span>
-            <div className="h-[2px] flex-1 bg-gray-200" />
+            <div className="h-[2px] flex-1 bg-gray-200 dark:bg-white/10" />
           </div>
 
           {/* Guest Mode */}
@@ -82,8 +201,13 @@ export default function LoginPage(): React.ReactElement {
       {/* Footer */}
       <p className="mt-8 text-center text-[10px] text-gray-400">
         Dengan login, lo setuju sama{" "}
-        <span className="cursor-pointer underline">Terms of Service</span> &{" "}
-        <span className="cursor-pointer underline">Privacy Policy</span>
+        <span className="cursor-pointer underline hover:text-gray-600 dark:hover:text-gray-300">
+          Terms of Service
+        </span>{" "}
+        &{" "}
+        <span className="cursor-pointer underline hover:text-gray-600 dark:hover:text-gray-300">
+          Privacy Policy
+        </span>
       </p>
     </div>
   );

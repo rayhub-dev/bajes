@@ -10,7 +10,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const bgVariants: Record<string, string> = {
-  default: "bg-white",
+  default: "bg-white dark:bg-bajes-surface-dark",
   yellow: "bg-bajes-yellow",
   pink: "bg-bajes-pink",
   red: "bg-bajes-red",
@@ -23,10 +23,10 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "border-3 rounded-2xl border-bajes-black",
+          "border-3 rounded-2xl border-bajes-black dark:border-white/20",
           bgVariants[variant],
           !noPadding && "p-5",
-          !noShadow && "shadow-brutal",
+          !noShadow && "shadow-brutal dark:shadow-brutal-dark",
           className,
         )}
         {...props}

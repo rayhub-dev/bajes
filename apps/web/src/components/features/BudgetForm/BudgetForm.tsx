@@ -12,6 +12,8 @@ interface BudgetFormProps {
   categoryName: string;
   currentBudgetCents?: number;
   spentCents?: number;
+  onSubmit?: (amountCents: number) => void;
+  onRemove?: () => void;
 }
 
 function BudgetForm({
@@ -21,6 +23,8 @@ function BudgetForm({
   categoryName,
   currentBudgetCents = 0,
   spentCents = 0,
+  onSubmit,
+  onRemove,
 }: BudgetFormProps): React.ReactElement {
   const [amount, setAmount] = useState(
     currentBudgetCents > 0 ? formatInputCurrency(String(currentBudgetCents)) : "",
@@ -32,14 +36,16 @@ function BudgetForm({
 
   const handleSubmit = (): void => {
     const amountCents = parseCurrencyInput(amount);
-    // TODO: integrate with API
-    console.log({ categoryName, amountCents });
+    if (onSubmit) {
+      onSubmit(amountCents);
+    }
     onClose();
   };
 
   const handleRemove = (): void => {
-    // TODO: integrate with API
-    console.log({ categoryName, action: "remove" });
+    if (onRemove) {
+      onRemove();
+    }
     onClose();
   };
 
@@ -49,11 +55,11 @@ function BudgetForm({
     <BottomSheet isOpen={isOpen} onClose={onClose} title="Set Bajes">
       <div className="space-y-5">
         {/* Category info */}
-        <div className="flex items-center gap-3 rounded-xl border-2 border-gray-200 bg-gray-50 p-4">
+        <div className="flex items-center gap-3 rounded-xl border-2 border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
           <span className="text-3xl">{categoryIcon}</span>
           <div>
             <p className="text-sm font-bold">{categoryName}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Sudah keluar: {formatCurrency(spentCents)} bulan ini
             </p>
           </div>
@@ -61,7 +67,7 @@ function BudgetForm({
 
         {/* Amount Input */}
         <div>
-          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-600">
+          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400">
             Limit Bajes Bulanan
           </label>
           <div className="relative">
@@ -79,7 +85,7 @@ function BudgetForm({
             />
           </div>
           {parsedAmount > 0 && spentCents > 0 && (
-            <p className="mt-1.5 text-xs text-gray-500">
+            <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
               {spentCents > parsedAmount
                 ? `⚠️ Udah over ${formatCurrency(spentCents - parsedAmount)} dari limit ini`
                 : `✅ Masih sisa ${formatCurrency(parsedAmount - spentCents)} dari limit ini`}

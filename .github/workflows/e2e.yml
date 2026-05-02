@@ -1,0 +1,66 @@
+# ─── E2E Tests: Playwright ─────────────────────────────────────────────────────
+# Runs Playwright browser tests on PRs to main/develop
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9.12.3"
+
+jobs:
+  e2e:
+    name: Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @bajes/api db:generate
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @bajes/web exec playwright install --with-deps chromium
+
+      - name: Build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: "http://localhost:4000"
+          NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy-key-for-e2e"
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+        env:
+          # API env for test server
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/bajes_test"
+          NODE_ENV: "test"
+          HOST: "0.0.0.0"
+          PORT: "4000"
+          CORS_ORIGINS: "http://localhost:3000"
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
