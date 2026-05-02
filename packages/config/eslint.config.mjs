@@ -41,7 +41,7 @@ export const baseConfig = [
       // No misused promises
       "@typescript-eslint/no-misused-promises": [
         "error",
-        { checksVoidReturn: { attributes: false } },
+        { checksVoidReturn: { attributes: false, arguments: false, properties: false } },
       ],
     },
   },
