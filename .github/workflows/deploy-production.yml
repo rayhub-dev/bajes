@@ -41,19 +41,41 @@ jobs:
       - name: Generate Prisma client
         run: pnpm --filter @bajes/api db:generate
 
-      - name: Build API
-        run: pnpm --filter @bajes/api build
+      - name: Build API and workspace dependencies
+        run: pnpm --filter @bajes/api... build
 
       - name: Prepare deployment package
         run: |
           mkdir -p deploy-package
+
+          # Copy compiled API
           cp -r apps/api/dist deploy-package/dist
           cp -r apps/api/prisma deploy-package/prisma
-          cp apps/api/package.json deploy-package/package.json
           cp ecosystem.config.cjs deploy-package/ecosystem.config.cjs
-          cp package.json deploy-package/root-package.json
-          cp pnpm-lock.yaml deploy-package/pnpm-lock.yaml
-          cp pnpm-workspace.yaml deploy-package/pnpm-workspace.yaml
+
+          # Rewrite package.json: replace workspace:* with file: references
+          node -e "
+            const pkg = require('./apps/api/package.json');
+            if (pkg.dependencies) {
+              for (const [name, version] of Object.entries(pkg.dependencies)) {
+                if (String(version).startsWith('workspace:')) {
+                  pkg.dependencies[name] = 'file:./workspace-packages/' + name;
+                }
+              }
+            }
+            // Remove devDependencies — not needed on VPS
+            delete pkg.devDependencies;
+            require('fs').writeFileSync('./deploy-package/package.json', JSON.stringify(pkg, null, 2));
+          "
+
+          # Copy compiled workspace packages
+          mkdir -p deploy-package/workspace-packages/@bajes/schemas
+          cp -r packages/schemas/dist deploy-package/workspace-packages/@bajes/schemas/dist
+          cp packages/schemas/package.json deploy-package/workspace-packages/@bajes/schemas/package.json
+
+          mkdir -p deploy-package/workspace-packages/@bajes/types
+          cp -r packages/types/dist deploy-package/workspace-packages/@bajes/types/dist
+          cp packages/types/package.json deploy-package/workspace-packages/@bajes/types/package.json
 
       - name: Upload deployment package
         uses: actions/upload-artifact@v4
@@ -69,21 +91,33 @@ jobs:
     needs: build
     environment: production
     steps:
+      - name: Validate deployment secrets
+        run: |
+          missing=""
+          if [ -z "${{ secrets.VPS_HOST }}" ]; then missing="$missing VPS_HOST"; fi
+          if [ -z "${{ secrets.VPS_USER }}" ]; then missing="$missing VPS_USER"; fi
+          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then missing="$missing VPS_SSH_KEY"; fi
+          if [ -n "$missing" ]; then
+            echo "❌ Missing required secrets:$missing"
+            echo "Go to Settings > Secrets > Actions to configure them."
+            exit 1
+          fi
+          echo "✅ All deployment secrets are configured"
+
       - name: Download deployment package
         uses: actions/download-artifact@v4
         with:
           name: deploy-package-production
           path: deploy-package/
 
-      - name: Deploy via SSH
+      - name: Ensure remote directory exists
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            mkdir -p ${{ env.DEPLOY_PATH }}
+          script: mkdir -p ${{ env.DEPLOY_PATH }}
 
       - name: Rsync files to VPS
         uses: burnett01/rsync-deployments@7.0.1
@@ -106,7 +140,7 @@ jobs:
           script: |
             cd ${{ env.DEPLOY_PATH }}
 
-            # Install production dependencies
+            # Install production dependencies (resolves workspace packages via file: refs)
             npm install --omit=dev
 
             # Generate Prisma client on server
