@@ -18,7 +18,8 @@ const listQuerySchema = z.object({
   month: z.coerce.number().int().min(1).max(12),
 });
 
-export function budgetsV1Routes(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await -- Fastify requires async plugin functions
+export async function budgetsV1Routes(server: FastifyInstance): Promise<void> {
   // ── GET /v1/budgets ───────────────────────────────────────────────────────
   server.get("/v1/budgets", { preHandler: requireAuth }, async (request) => {
     const { year, month } = server.validate.query(listQuerySchema, request.query);

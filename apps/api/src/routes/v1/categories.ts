@@ -15,7 +15,8 @@ const listCategoriesQuerySchema = z.object({
     .transform((val) => val === "true"),
 });
 
-export function categoriesV1Routes(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await -- Fastify requires async plugin functions
+export async function categoriesV1Routes(server: FastifyInstance): Promise<void> {
   server.get("/v1/categories", { preHandler: requireAuth }, async (request) => {
     const query = server.validate.query(listCategoriesQuerySchema, request.query);
     const user = await authService.getOrCreateUser(request.user.supabaseUid, request.user.email);

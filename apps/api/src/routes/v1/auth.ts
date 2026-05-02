@@ -5,7 +5,8 @@ import { ok } from "../../lib/response.js";
 
 const authService = new AuthService();
 
-export function authV1Routes(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await -- Fastify requires async plugin functions
+export async function authV1Routes(server: FastifyInstance): Promise<void> {
   server.get("/v1/auth/me", { preHandler: requireAuth }, async (request) => {
     const { supabaseUid, email } = request.user;
     const user = await authService.getOrCreateUser(supabaseUid, email);

@@ -19,7 +19,8 @@ const idParamsSchema = z.object({
 
 const batchCreateSchema = z.array(createTransactionSchema).max(50);
 
-export function transactionsV1Routes(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await -- Fastify requires async plugin functions
+export async function transactionsV1Routes(server: FastifyInstance): Promise<void> {
   // ── GET /v1/transactions ─────────────────────────────────────────────────
   server.get("/v1/transactions", { preHandler: requireAuth }, async (request) => {
     const filters = server.validate.query(transactionFiltersSchema, request.query);
