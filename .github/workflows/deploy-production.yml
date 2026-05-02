@@ -41,19 +41,41 @@ jobs:
       - name: Generate Prisma client
         run: pnpm --filter @bajes/api db:generate
 
-      - name: Build API
-        run: pnpm --filter @bajes/api build
+      - name: Build API and workspace dependencies
+        run: pnpm --filter @bajes/api... build
 
       - name: Prepare deployment package
         run: |
           mkdir -p deploy-package
+
+          # Copy compiled API
           cp -r apps/api/dist deploy-package/dist
           cp -r apps/api/prisma deploy-package/prisma
-          cp apps/api/package.json deploy-package/package.json
           cp ecosystem.config.cjs deploy-package/ecosystem.config.cjs
-          cp package.json deploy-package/root-package.json
-          cp pnpm-lock.yaml deploy-package/pnpm-lock.yaml
-          cp pnpm-workspace.yaml deploy-package/pnpm-workspace.yaml
+
+          # Rewrite package.json: replace workspace:* with file: references
+          node -e "
+            const pkg = require('./apps/api/package.json');
+            if (pkg.dependencies) {
+              for (const [name, version] of Object.entries(pkg.dependencies)) {
+                if (String(version).startsWith('workspace:')) {
+                  pkg.dependencies[name] = 'file:./workspace-packages/' + name;
+                }
+              }
+            }
+            // Remove devDependencies — not needed on VPS
+            delete pkg.devDependencies;
+            require('fs').writeFileSync('./deploy-package/package.json', JSON.stringify(pkg, null, 2));
+          "
+
+          # Copy compiled workspace packages
+          mkdir -p deploy-package/workspace-packages/@bajes/schemas
+          cp -r packages/schemas/dist deploy-package/workspace-packages/@bajes/schemas/dist
+          cp packages/schemas/package.json deploy-package/workspace-packages/@bajes/schemas/package.json
+
+          mkdir -p deploy-package/workspace-packages/@bajes/types
+          cp -r packages/types/dist deploy-package/workspace-packages/@bajes/types/dist
+          cp packages/types/package.json deploy-package/workspace-packages/@bajes/types/package.json
 
       - name: Upload deployment package
         uses: actions/upload-artifact@v4
@@ -106,7 +128,7 @@ jobs:
           script: |
             cd ${{ env.DEPLOY_PATH }}
 
-            # Install production dependencies
+            # Install production dependencies (resolves workspace packages via file: refs)
             npm install --omit=dev
 
             # Generate Prisma client on server
