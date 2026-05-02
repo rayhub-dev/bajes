@@ -1,13 +1,18 @@
 // ─── PM2 Ecosystem Config ─────────────────────────────────────────────────────
 // Used by PM2 to manage the Bajes API process on VPS
 // Docs: https://pm2.keymetrics.io/docs/usage/application-declaration/
+//
+// App name is derived from NODE_ENV or PM2_APP_NAME env var so staging and
+// production can coexist on the same VPS without colliding.
+
+const appName = process.env.PM2_APP_NAME || "bajes-api";
 
 module.exports = {
   apps: [
     {
-      name: "bajes-api",
+      name: appName,
       script: "./dist/server.js",
-      instances: "max", // Use all available CPU cores
+      instances: 2, // Fixed 2 instances — predictable on small VPS
       exec_mode: "cluster",
       autorestart: true,
       watch: false,
@@ -28,7 +33,7 @@ module.exports = {
       },
       env_production: {
         NODE_ENV: "production",
-        PORT: 4000,
+        PORT: 4001,
         HOST: "127.0.0.1",
       },
     },

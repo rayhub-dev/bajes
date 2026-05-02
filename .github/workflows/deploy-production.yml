@@ -53,8 +53,12 @@ jobs:
           cp -r apps/api/prisma deploy-package/prisma
           cp ecosystem.config.cjs deploy-package/ecosystem.config.cjs
 
-          # Rewrite package.json: replace workspace:* with file: references
+          # Copy compiled workspace packages (strip devDependencies to avoid workspace:* resolution errors)
           node -e "
+            const fs = require('fs');
+            const path = require('path');
+
+            // --- 1. Rewrite API package.json ---
             const pkg = require('./apps/api/package.json');
             if (pkg.dependencies) {
               for (const [name, version] of Object.entries(pkg.dependencies)) {
@@ -63,19 +67,45 @@ jobs:
                 }
               }
             }
-            // Remove devDependencies — not needed on VPS
             delete pkg.devDependencies;
-            require('fs').writeFileSync('./deploy-package/package.json', JSON.stringify(pkg, null, 2));
+            fs.writeFileSync('./deploy-package/package.json', JSON.stringify(pkg, null, 2));
+
+            // --- 2. Copy workspace packages with cleaned package.json ---
+            const workspacePackages = ['schemas', 'types'];
+            for (const pkgName of workspacePackages) {
+              const srcDir = path.join('packages', pkgName);
+              const destDir = path.join('deploy-package', 'workspace-packages', '@bajes', pkgName);
+              fs.mkdirSync(destDir, { recursive: true });
+
+              // Copy dist/
+              fs.cpSync(path.join(srcDir, 'dist'), path.join(destDir, 'dist'), { recursive: true });
+
+              // Write cleaned package.json (only keep name, version, type, main, types, exports, dependencies)
+              const wsPkg = require('./' + path.join(srcDir, 'package.json'));
+              const cleanPkg = {
+                name: wsPkg.name,
+                version: wsPkg.version,
+                type: wsPkg.type,
+                main: wsPkg.main,
+                types: wsPkg.types,
+                exports: wsPkg.exports,
+                dependencies: wsPkg.dependencies || {},
+              };
+              fs.writeFileSync(path.join(destDir, 'package.json'), JSON.stringify(cleanPkg, null, 2));
+            }
+
+            console.log('✅ Deploy package prepared');
+            console.log('   API deps:', Object.keys(pkg.dependencies).join(', '));
+            for (const pkgName of workspacePackages) {
+              const wsPkg = require('./packages/' + pkgName + '/package.json');
+              console.log('   @bajes/' + pkgName + ' deps:', Object.keys(wsPkg.dependencies || {}).join(', ') || '(none)');
+            }
           "
 
-          # Copy compiled workspace packages
-          mkdir -p deploy-package/workspace-packages/@bajes/schemas
-          cp -r packages/schemas/dist deploy-package/workspace-packages/@bajes/schemas/dist
-          cp packages/schemas/package.json deploy-package/workspace-packages/@bajes/schemas/package.json
-
-          mkdir -p deploy-package/workspace-packages/@bajes/types
-          cp -r packages/types/dist deploy-package/workspace-packages/@bajes/types/dist
-          cp packages/types/package.json deploy-package/workspace-packages/@bajes/types/package.json
+          # Generate package-lock.json for deterministic installs on VPS
+          cd deploy-package
+          npm install --package-lock-only --ignore-scripts 2>/dev/null || true
+          cd ..
 
       - name: Upload deployment package
         uses: actions/upload-artifact@v4
@@ -138,10 +168,20 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
+            set -e
             cd ${{ env.DEPLOY_PATH }}
 
-            # Install production dependencies (resolves workspace packages via file: refs)
-            npm install --omit=dev
+            echo "Installing production dependencies..."
+            npm install --omit=dev 2>&1
+            echo "npm install complete"
+
+            # Verify critical packages exist
+            if [ ! -d "node_modules/fastify" ]; then
+              echo "FATAL: fastify not found in node_modules after install"
+              ls -la node_modules/ | head -20
+              exit 1
+            fi
+            echo "Critical packages verified"
 
             # Generate Prisma client on server
             npx prisma generate --schema=prisma/schema.prisma
@@ -149,11 +189,11 @@ jobs:
             # Run database migrations
             npx prisma migrate deploy --schema=prisma/schema.prisma
 
-            # Restart PM2 process
-            pm2 startOrRestart ecosystem.config.cjs --env production --update-env
+            # Restart PM2 process (PM2_APP_NAME ensures unique name per environment)
+            PM2_APP_NAME=${{ env.PM2_APP_NAME }} pm2 startOrRestart ecosystem.config.cjs --env production --update-env
             pm2 save
 
-            echo "✅ Production deployment complete"
+            echo "Production deployment complete"
 
   # ─── Post-deploy health check ──────────────────────────────────────────────────
   health-check:
