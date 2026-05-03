@@ -18,6 +18,7 @@ const listQuerySchema = z.object({
   month: z.coerce.number().int().min(1).max(12),
 });
 
+// eslint-disable-next-line @typescript-eslint/require-await -- Fastify requires async plugin functions
 export async function budgetsV1Routes(server: FastifyInstance): Promise<void> {
   // ── GET /v1/budgets ───────────────────────────────────────────────────────
   server.get("/v1/budgets", { preHandler: requireAuth }, async (request) => {
@@ -26,7 +27,7 @@ export async function budgetsV1Routes(server: FastifyInstance): Promise<void> {
 
     const budgets = await budgetService.list(user.id, year, month);
 
-    return ok(budgets, String(request.id));
+    return ok(budgets, request.id);
   });
 
   // ── POST /v1/budgets ──────────────────────────────────────────────────────
@@ -36,7 +37,7 @@ export async function budgetsV1Routes(server: FastifyInstance): Promise<void> {
 
     const budget = await budgetService.upsert(user.id, body);
 
-    return reply.status(201).send(ok(budget, String(request.id)));
+    return reply.status(201).send(ok(budget, request.id));
   });
 
   // ── DELETE /v1/budgets/:id ────────────────────────────────────────────────
@@ -46,6 +47,6 @@ export async function budgetsV1Routes(server: FastifyInstance): Promise<void> {
 
     await budgetService.delete(id, user.id);
 
-    return ok({ deleted: true }, String(request.id));
+    return ok({ deleted: true }, request.id);
   });
 }

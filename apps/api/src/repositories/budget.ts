@@ -110,7 +110,7 @@ export class BudgetRepository extends BaseRepository {
         where: { id: existing.id },
         data: {
           amountCents: input.amountCents,
-          notifyAt: input.notifyAt ?? 80,
+          notifyAt: input.notifyAt,
         },
         include: { category: true },
       });
@@ -123,7 +123,7 @@ export class BudgetRepository extends BaseRepository {
           periodType: input.periodType,
           periodYear: input.periodYear,
           periodMonth: input.periodMonth,
-          notifyAt: input.notifyAt ?? 80,
+          notifyAt: input.notifyAt,
         },
         include: { category: true },
       });

@@ -45,6 +45,7 @@ function getErrorEnvelope(error: unknown, isProduction: boolean): ErrorEnvelope 
 
     return {
       statusCode,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback
       code: error.code ?? (isServerError ? "INTERNAL_SERVER_ERROR" : "REQUEST_ERROR"),
       message: isServerError && isProduction ? "Internal server error" : error.message,
       shouldLog: isServerError,
@@ -59,7 +60,7 @@ function getErrorEnvelope(error: unknown, isProduction: boolean): ErrorEnvelope 
   };
 }
 
-export async function errorHandlerPlugin(server: FastifyInstance): Promise<void> {
+export function errorHandlerPlugin(server: FastifyInstance): void {
   const isProduction = process.env["NODE_ENV"] === "production";
 
   server.setErrorHandler((error, request, reply) => {
@@ -69,7 +70,7 @@ export async function errorHandlerPlugin(server: FastifyInstance): Promise<void>
       request.log.error(error);
     }
 
-    const requestId = String(request.id);
+    const requestId = request.id;
 
     return reply
       .status(envelope.statusCode)

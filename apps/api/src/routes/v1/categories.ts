@@ -15,6 +15,7 @@ const listCategoriesQuerySchema = z.object({
     .transform((val) => val === "true"),
 });
 
+// eslint-disable-next-line @typescript-eslint/require-await -- Fastify requires async plugin functions
 export async function categoriesV1Routes(server: FastifyInstance): Promise<void> {
   server.get("/v1/categories", { preHandler: requireAuth }, async (request) => {
     const query = server.validate.query(listCategoriesQuerySchema, request.query);
@@ -23,6 +24,6 @@ export async function categoriesV1Routes(server: FastifyInstance): Promise<void>
       userId: user.id,
       includeDefaults: query.includeDefaults,
     });
-    return ok(categories, String(request.id));
+    return ok(categories, request.id);
   });
 }

@@ -52,8 +52,12 @@ jobs:
           cp -r apps/api/prisma deploy-package/prisma
           cp ecosystem.config.cjs deploy-package/ecosystem.config.cjs
 
-          # Rewrite package.json: replace workspace:* with file: references
+          # Copy compiled workspace packages (strip devDependencies to avoid workspace:* resolution errors)
           node -e "
+            const fs = require('fs');
+            const path = require('path');
+
+            // --- 1. Rewrite API package.json ---
             const pkg = require('./apps/api/package.json');
             if (pkg.dependencies) {
               for (const [name, version] of Object.entries(pkg.dependencies)) {
@@ -62,19 +66,53 @@ jobs:
                 }
               }
             }
-            // Remove devDependencies — not needed on VPS
+            // Move prisma from devDependencies to dependencies (needed for generate + migrate on VPS)
+            if (pkg.devDependencies && pkg.devDependencies.prisma) {
+              pkg.dependencies = pkg.dependencies || {};
+              pkg.dependencies.prisma = pkg.devDependencies.prisma;
+            }
             delete pkg.devDependencies;
-            require('fs').writeFileSync('./deploy-package/package.json', JSON.stringify(pkg, null, 2));
+            fs.writeFileSync('./deploy-package/package.json', JSON.stringify(pkg, null, 2));
+
+            // --- 2. Copy workspace packages with cleaned package.json ---
+            const workspacePackages = ['schemas', 'types'];
+            for (const pkgName of workspacePackages) {
+              const srcDir = path.join('packages', pkgName);
+              const destDir = path.join('deploy-package', 'workspace-packages', '@bajes', pkgName);
+              fs.mkdirSync(destDir, { recursive: true });
+
+              // Copy dist/
+              fs.cpSync(path.join(srcDir, 'dist'), path.join(destDir, 'dist'), { recursive: true });
+
+              // Write cleaned package.json (only keep name, version, type, main, types, exports, dependencies)
+              const wsPkg = require('./' + path.join(srcDir, 'package.json'));
+              const cleanPkg = {
+                name: wsPkg.name,
+                version: wsPkg.version,
+                type: wsPkg.type,
+                main: wsPkg.main,
+                types: wsPkg.types,
+                exports: wsPkg.exports,
+                dependencies: wsPkg.dependencies || {},
+              };
+              fs.writeFileSync(path.join(destDir, 'package.json'), JSON.stringify(cleanPkg, null, 2));
+            }
+
+            console.log('✅ Deploy package prepared');
+            console.log('   API deps:', Object.keys(pkg.dependencies).join(', '));
+            for (const pkgName of workspacePackages) {
+              const wsPkg = require('./packages/' + pkgName + '/package.json');
+              console.log('   @bajes/' + pkgName + ' deps:', Object.keys(wsPkg.dependencies || {}).join(', ') || '(none)');
+            }
           "
 
-          # Copy compiled workspace packages
-          mkdir -p deploy-package/workspace-packages/@bajes/schemas
-          cp -r packages/schemas/dist deploy-package/workspace-packages/@bajes/schemas/dist
-          cp packages/schemas/package.json deploy-package/workspace-packages/@bajes/schemas/package.json
+          # Copy generated Prisma client (so VPS uses matching version)
+          cp -r apps/api/node_modules/.prisma deploy-package/.prisma-generated 2>/dev/null || true
 
-          mkdir -p deploy-package/workspace-packages/@bajes/types
-          cp -r packages/types/dist deploy-package/workspace-packages/@bajes/types/dist
-          cp packages/types/package.json deploy-package/workspace-packages/@bajes/types/package.json
+          # Generate package-lock.json for deterministic installs on VPS
+          cd deploy-package
+          npm install --package-lock-only --ignore-scripts 2>/dev/null || true
+          cd ..
 
       - name: Upload deployment package
         uses: actions/upload-artifact@v4
@@ -137,19 +175,73 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
+            set -e
             cd ${{ env.DEPLOY_PATH }}
 
-            # Install production dependencies (resolves workspace packages via file: refs)
-            npm install --omit=dev
+            echo "📦 Installing production dependencies..."
+            npm install --omit=dev 2>&1
+            echo "✅ npm install complete"
+
+            # Verify critical packages exist
+            if [ ! -d "node_modules/fastify" ]; then
+              echo "❌ FATAL: fastify not found in node_modules after install"
+              ls -la node_modules/ | head -20
+              exit 1
+            fi
+            echo "✅ Critical packages verified"
+
+            # Use LOCAL prisma CLI (not npx which may resolve to global Prisma 7)
+            PRISMA="./node_modules/.bin/prisma"
+            if [ ! -f "$PRISMA" ]; then
+              echo "❌ FATAL: Local prisma CLI not found at $PRISMA"
+              exit 1
+            fi
+            echo "✅ Using local Prisma: $($PRISMA --version)"
 
             # Generate Prisma client on server
-            npx prisma generate --schema=prisma/schema.prisma
+            $PRISMA generate --schema=prisma/schema.prisma
 
             # Run database migrations
-            npx prisma migrate deploy --schema=prisma/schema.prisma
+            $PRISMA migrate deploy --schema=prisma/schema.prisma
 
-            # Restart PM2 process
-            pm2 startOrRestart ecosystem.config.cjs --env staging --update-env
+            # Ensure logs directory exists
+            mkdir -p logs
+
+            # Verify .env file exists (Node --env-file silently ignores missing files)
+            if [ ! -f ".env" ]; then
+              echo "⚠️  WARNING: .env file not found at ${{ env.DEPLOY_PATH }}/.env"
+              echo "   The app will start without environment variables and likely crash."
+              echo "   Create .env with DATABASE_URL, SUPABASE_URL, etc."
+            fi
+
+            # Restart PM2 process (PM2_APP_NAME ensures unique name per environment)
+            PM2_APP_NAME=${{ env.PM2_APP_NAME }} pm2 startOrRestart ecosystem.config.cjs --env staging --update-env
             pm2 save
 
+            # Wait for app to stabilize, then verify it's actually running
+            echo "⏳ Waiting 5s for app to start..."
+            sleep 5
+
+            # Check PM2 status
+            pm2 status
+            PM2_STATUS=$(pm2 jq ${{ env.PM2_APP_NAME }} 2>/dev/null || echo "[]")
+            echo "PM2 process info: $PM2_STATUS"
+
+            # Check if processes are in 'online' state (not 'errored' or 'stopped')
+            ONLINE_COUNT=$(pm2 list 2>/dev/null | grep -c "online" || echo "0")
+            if [ "$ONLINE_COUNT" -eq "0" ]; then
+              echo "❌ No PM2 processes are online! Dumping error logs:"
+              pm2 logs ${{ env.PM2_APP_NAME }} --nostream --lines 30 2>&1 || true
+              exit 1
+            fi
+
+            # Health check via localhost
+            echo "🏥 Running health check..."
+            HEALTH=$(curl -sf --max-time 10 http://127.0.0.1:4000/health 2>&1) || {
+              echo "❌ Health check failed! API not responding on port 4000"
+              echo "PM2 logs:"
+              pm2 logs ${{ env.PM2_APP_NAME }} --nostream --lines 50 2>&1 || true
+              exit 1
+            }
+            echo "✅ Health check passed: $HEALTH"
             echo "✅ Staging deployment complete"

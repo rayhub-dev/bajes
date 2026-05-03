@@ -55,3 +55,6 @@ apps/api/server-*.txt
 
 # PM2 logs
 logs/
+
+# Local docs (not for repo)
+DEVELOPMENT-WORKFLOW.md

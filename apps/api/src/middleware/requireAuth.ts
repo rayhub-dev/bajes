@@ -17,7 +17,7 @@ export async function requireAuth(request: FastifyRequest, reply: FastifyReply):
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     void reply
       .status(401)
-      .send(fail("AUTH_001", "Missing or invalid authorization header", String(request.id)));
+      .send(fail("AUTH_001", "Missing or invalid authorization header", request.id));
     return;
   }
 
@@ -26,8 +26,9 @@ export async function requireAuth(request: FastifyRequest, reply: FastifyReply):
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase.auth.getUser(token);
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (error || !data.user) {
-    void reply.status(401).send(fail("AUTH_001", "Invalid or expired token", String(request.id)));
+    void reply.status(401).send(fail("AUTH_001", "Invalid or expired token", request.id));
     return;
   }
 

@@ -68,8 +68,8 @@ async function start(): Promise<void> {
     },
   });
 
-  await validatePlugin(server);
-  await errorHandlerPlugin(server);
+  validatePlugin(server);
+  errorHandlerPlugin(server);
   await server.register(categoriesV1Routes);
   await server.register(transactionsV1Routes);
   await server.register(budgetsV1Routes);
