@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import logoImg from "@/assets/logo.webp";
 
 export default function LandingPage(): React.ReactElement {
   return (
@@ -39,7 +40,7 @@ export default function LandingPage(): React.ReactElement {
         <header className="mx-auto flex max-w-5xl animate-fade-in items-center justify-between p-4 md:p-6">
           <div className="flex items-center gap-2">
             <img
-              src="/logo.webp"
+              src={logoImg.src}
               alt="Bajes Logo"
               width={40}
               height={40}
