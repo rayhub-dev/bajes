@@ -38,7 +38,7 @@ export default function LandingPage(): React.ReactElement {
       <div className="relative z-10">
         {/* Navigation / Header */}
         <header className="mx-auto flex max-w-5xl animate-fade-in items-center justify-between p-4 md:p-6">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <img
               src={logoImg.src}
               alt="Bajes Logo"
@@ -46,8 +46,7 @@ export default function LandingPage(): React.ReactElement {
               height={40}
               className="h-10 w-10 object-contain"
             />
-            <span className="font-display text-xl font-bold uppercase tracking-tight">Bajes</span>
-          </div>
+          </Link>
           <Link href="/login">
             <Button variant="outline" size="sm">
               Masuk

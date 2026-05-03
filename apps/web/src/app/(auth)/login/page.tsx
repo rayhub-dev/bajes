@@ -95,7 +95,6 @@ export default function LoginPage(): React.ReactElement {
               />
             </div>
           </Link>
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Bajes</h1>
           <p className="mt-1 text-sm font-medium text-[#4b5563]">Money tracker buat Gen-Z 🔥</p>
         </div>
 
