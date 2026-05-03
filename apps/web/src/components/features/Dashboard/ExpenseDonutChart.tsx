@@ -51,8 +51,8 @@ function ExpenseDonutChart({ categories = [] }: ExpenseDonutChartProps): React.R
       ) : (
         <div className="flex items-center gap-4">
           {/* Chart */}
-          <div className="h-36 w-36 flex-shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-36 min-h-[1px] w-36 min-w-[1px] flex-shrink-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <PieChart>
                 <Pie
                   data={categories}
