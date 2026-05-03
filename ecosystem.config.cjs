@@ -5,8 +5,9 @@
 // App name is derived from PM2_APP_NAME env var so staging and production
 // can coexist on the same VPS without colliding.
 //
-// Node's --env-file flag (Node 20+) loads the .env file automatically,
-// so PM2 doesn't need dotenv or manual env sourcing.
+// The app uses dotenv/config to load .env at startup, which works
+// reliably in PM2 cluster mode (unlike Node --env-file which only
+// loads in the master process).
 
 const appName = process.env.PM2_APP_NAME || "bajes-api";
 
@@ -15,7 +16,6 @@ module.exports = {
     {
       name: appName,
       script: "./dist/server.js",
-      node_args: "--env-file=.env",
       instances: 2, // Fixed 2 instances — predictable on small VPS
       exec_mode: "cluster",
       autorestart: true,
