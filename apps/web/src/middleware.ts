@@ -6,7 +6,7 @@ export function middleware(request: NextRequest): NextResponse {
 
   // Public routes that don't need auth
   const publicPaths = ["/login", "/auth/callback", "/offline", "/share-target"];
-  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+  const isPublicPath = pathname === "/" || publicPaths.some((path) => pathname.startsWith(path));
 
   if (isPublicPath) {
     return NextResponse.next();
