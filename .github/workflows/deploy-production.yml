@@ -222,7 +222,8 @@ jobs:
             echo "⏳ Waiting 5s for app to start..."
             sleep 5
 
-            # Check PM2 status and dump logs if crashed
+            # Check PM2 status
+            pm2 status
             ONLINE_COUNT=$(pm2 list 2>/dev/null | grep -c "online" || echo "0")
             if [ "$ONLINE_COUNT" -eq "0" ]; then
               echo "❌ No PM2 processes are online! Dumping error logs:"
@@ -230,7 +231,16 @@ jobs:
               exit 1
             fi
 
-            echo "Production deployment complete"
+            # Health check via localhost (production uses port 4001)
+            echo "🏥 Running health check..."
+            HEALTH=$(curl -sf --max-time 10 http://127.0.0.1:4001/health 2>&1) || {
+              echo "❌ Health check failed! API not responding on port 4001"
+              echo "PM2 logs:"
+              pm2 logs ${{ env.PM2_APP_NAME }} --nostream --lines 50 2>&1 || true
+              exit 1
+            }
+            echo "✅ Health check passed: $HEALTH"
+            echo "✅ Production deployment complete"
 
   # ─── Post-deploy health check ──────────────────────────────────────────────────
   health-check:
@@ -241,11 +251,12 @@ jobs:
       - name: Wait for server restart
         run: sleep 10
 
-      - name: Check API health
+      - name: Check API health (external)
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.API_URL }}/health)
-          if [ "$response" != "200" ]; then
-            echo "❌ Health check failed with status: $response"
+          echo "🏥 Checking https://api.bajes.my.id/health ..."
+          response=$(curl -sf --max-time 15 https://api.bajes.my.id/health 2>&1) || {
+            echo "❌ External health check failed! API not reachable via Cloudflare"
+            echo "   Check: Cloudflare DNS, Nginx config, PM2 status"
             exit 1
-          fi
-          echo "✅ API is healthy (HTTP 200)"
+          }
+          echo "✅ API is healthy: $response"
