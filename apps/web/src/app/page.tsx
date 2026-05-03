@@ -42,9 +42,9 @@ export default function LandingPage(): React.ReactElement {
             <img
               src={logoImg.src}
               alt="Bajes Logo"
-              width={40}
-              height={40}
-              className="h-10 w-10 object-contain"
+              width={140}
+              height={140}
+              className="h-[60px] w-auto object-contain md:h-[72px]"
             />
           </Link>
           <Link href="/login">

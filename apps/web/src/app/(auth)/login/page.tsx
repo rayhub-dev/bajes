@@ -84,16 +84,14 @@ export default function LoginPage(): React.ReactElement {
       <div className="relative z-10 w-full max-w-sm">
         {/* Logo & Branding */}
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-block">
-            <div className="border-3 mx-auto mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl border-bajes-black bg-white shadow-brutal">
-              <img
-                src={logoImg.src}
-                alt="Bajes Logo"
-                width={48}
-                height={48}
-                className="h-12 w-12 object-contain"
-              />
-            </div>
+          <Link href="/" className="mx-auto mb-4 inline-block">
+            <img
+              src={logoImg.src}
+              alt="Bajes Logo"
+              width={144}
+              height={144}
+              className="h-36 w-36 object-contain"
+            />
           </Link>
           <p className="mt-1 text-sm font-medium text-[#4b5563]">Money tracker buat Gen-Z 🔥</p>
         </div>
