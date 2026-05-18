@@ -15,18 +15,18 @@
   "dependencies": {
     "@bajes/schemas": "workspace:*",
     "@bajes/types": "workspace:*",
-    "@supabase/supabase-js": "^2.49.8",
-    "@tanstack/react-query": "^5.100.6",
-    "axios": "^1.15.2",
+    "@supabase/supabase-js": "^2.105.4",
+    "@tanstack/react-query": "^5.100.10",
+    "axios": "^1.16.1",
     "clsx": "^2.1.1",
     "dexie": "^4.4.2",
     "framer-motion": "^12.38.0",
-    "lucide-react": "^1.14.0",
+    "lucide-react": "^1.16.0",
     "next": "14.2.35",
     "react": "^18",
     "react-dom": "^18",
     "recharts": "^3.8.1",
-    "zustand": "^5.0.12"
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@bajes/config": "workspace:*",
