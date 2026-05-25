@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@bajes/config": "workspace:*",
-    "@types/node": "^20",
+    "@types/node": "^25",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
